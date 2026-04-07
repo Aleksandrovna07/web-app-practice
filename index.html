@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Бавлы: Активный гражданин | Исполнительный комитет</title>
+    <link rel="stylesheet" href="style.css">
+  <!-- Яндекс.Карты API (для демонстрации карты с метками) -->
+  <script src="https://api-maps.yandex.ru/2.1/?apikey=ваш-api-ключ&lang=ru_RU" type="text/javascript"></script>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <h1>🌾 Бавлы: Активный гражданин</h1>
+    <p>Исполнительный комитет Бавлинского муниципального района РТ</p>
+  </div>
+  <div class="header-actions">
+    <div class="search-box">
+      <input type="text" placeholder="Поиск новостей...">
+    </div>
+    <button class="btn-outline-light" id="loginBtn">Войти / Госуслуги</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="dashboard">
+    <!-- ЛЕВАЯ КОЛОНКА: Обращения -->
+    <div class="card">
+      <h3>📌 Подать обращение</h3>
+      <button class="btn-primary" id="openComplaintBtn">➕ Новая жалоба / предложение</button>
+      <div style="margin-top: 1.5rem;">
+        <h4>📋 Мои обращения</h4>
+        <div id="complaintsList">
+          <div class="complaint-item">
+            <strong>Яма у дома №12</strong> – ЖКХ<br>
+            <span class="status-badge status-inprogress">⚙ В работе</span>
+          </div>
+          <div class="complaint-item">
+            <strong>Сломанная лавочка в парке</strong> – Благоустройство<br>
+            <span class="status-badge status-done">✅ Выполнено</span>
+          </div>
+          <div class="complaint-item">
+            <strong>Не работает фонарь на ул. Нефтяников</strong> – Уличное освещение<br>
+            <span class="status-badge status-inprogress">⚙ Принято</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ПРАВАЯ КОЛОНКА: НОВОСТИ И АНОНСЫ -->
+    <div class="card">
+      <h3>📢 Новости района</h3>
+      <ul class="news-list" id="newsFeed">
+        <li>🏆 Субботник «Чистый Бавлы» пройдёт 15 мая — приглашаем жителей!</li>
+        <li>💧 Плановое отключение воды 12 апреля с 9:00 до 17:00 (ул. Советская)</li>
+        <li>📌 Глава района проведёт прямую линию 20 апреля в 18:00</li>
+        <li>🚦 Новый светофор на перекрёстке ул. Ленина — Октябрьская запущен</li>
+      </ul>
+      <button class="btn-outline-light" style="margin-top: 10px; width:100%; border-color:#ccc;">Все новости →</button>
+    </div>
+
+    <!-- КАРТА ПРОБЛЕМ (через Яндекс.Карты) -->
+    <div class="card card-full">
+      <h3>🗺️ Карта проблем (горячие точки района)</h3>
+      <div id="map"></div>
+      <p style="font-size: 0.8rem; margin-top: 0.5rem;">* ямы, свалки, аварийные участки — кликните по метке для деталей</p>
+    </div>
+
+    <!-- ОПРОС + ГРАФИК ПРИЁМА -->
+    <div class="card card-full">
+      <div class="flex-row">
+        <div class="poll">
+          <h4>📊 Опрос недели</h4>
+          <p>Куда в первую очередь направить бюджет района?</p>
+          <div style="margin: 10px 0;">
+            <label><input type="radio" name="poll"> Ремонт дорог</label><br>
+            <label><input type="radio" name="poll"> Строительство детской площадки</label><br>
+            <label><input type="radio" name="poll"> Озеленение и парки</label>
+          </div>
+          <button class="vote-btn" id="voteBtn">Проголосовать</button>
+        </div>
+        <div class="schedule">
+          <h4>🕒 График приёма граждан</h4>
+          <p><strong>Исполком:</strong> ул. Куйбышева, д. 20</p>
+          <p>Пн-Чт: 9:00 – 18:00<br> Пт: 9:00 – 16:45<br> Сб-Вс: выходной</p>
+          <p><strong>Телефон горячей линии:</strong> 8(85569) 6 07 13</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>© 2025 Исполнительный комитет Бавлинского муниципального района Республики Татарстан</p>
+  <p>Платформа «Бавлы: Активный гражданин» — ваше участие меняет район к лучшему</p>
+</footer>
+
+<!-- МОДАЛЬНОЕ ОКНО (ОБРАЩЕНИЕ) -->
+<div id="complaintModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" id="closeModalBtn">&times;</span>
+    <h3>✍️ Новое обращение</h3>
+    <label>Тема / проблема</label>
+    <input type="text" id="complaintTitle" placeholder="Например: разбитая дорога">
+
+    <label>Категория</label>
+    <select id="complaintCategory">
+      <option>ЖКХ / Дороги</option>
+      <option>Благоустройство</option>
+      <option>Освещение</option>
+      <option>Социальная защита</option>
+    </select>
+
+    <label>Описание</label>
+    <textarea rows="3" id="complaintDesc" placeholder="Опишите ситуацию, приложить фото можно позже..."></textarea>
+
+    <label>📍 Геолокация (автоматически)</label>
+    <button id="getLocationBtn" style="background:#ecf0f1; border-radius: 40px; padding: 0.3rem; margin-bottom: 1rem;">📱 Определить адрес</button>
+    <input type="text" id="complaintAddress" placeholder="Адрес проблемы">
+
+    <button class="btn-primary" id="submitComplaintBtn">Отправить обращение</button>
+  </div>
+</div>
+
+<script>
+  // ----- 1. Модальное окно -----
+  const modal = document.getElementById('complaintModal');
+  const openBtn = document.getElementById('openComplaintBtn');
+  const closeBtn = document.getElementById('closeModalBtn');
+  openBtn.onclick = () => modal.style.display = 'flex';
+  closeBtn.onclick = () => modal.style.display = 'none';
+  window.onclick = (e) => { if(e.target === modal) modal.style.display = 'none'; };
+
+  // ----- 2. Геолокация (примерная, для демо) -----
+  document.getElementById('getLocationBtn')?.addEventListener('click', () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(position => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        document.getElementById('complaintAddress').value = `Координаты: ${lat.toFixed(5)}, ${lng.toFixed(5)} (ул. Бавлы)`;
+      }, () => {
+        document.getElementById('complaintAddress').value = 'Бавлы, ул. Нефтяников (по умолчанию)';
+      });
+    } else {
+      alert('Геолокация не поддерживается');
+    }
+  });
+
+  // ----- 3. Добавление нового обращения в список (динамически) -----
+  const submitBtn = document.getElementById('submitComplaintBtn');
+  const complaintsContainer = document.getElementById('complaintsList');
+
+  submitBtn.addEventListener('click', () => {
+    const title = document.getElementById('complaintTitle').value.trim();
+    const category = document.getElementById('complaintCategory').value;
+    const desc = document.getElementById('complaintDesc').value.trim();
+
+    if (!title) {
+      alert('Пожалуйста, укажите тему обращения');
+      return;
+    }
+
+    // Создаём элемент нового обращения
+    const newComplaint = document.createElement('div');
+    newComplaint.className = 'complaint-item';
+    newComplaint.innerHTML = `
+      <strong>${escapeHtml(title)}</strong> – ${escapeHtml(category)}<br>
+      <small>${escapeHtml(desc.substring(0, 70))}${desc.length > 70 ? '…' : ''}</small><br>
+      <span class="status-badge status-inprogress">🕒 Принято (ожидает ответа)</span>
+    `;
+    complaintsContainer.prepend(newComplaint);
+
+    // Очистка формы и закрытие модалки
+    document.getElementById('complaintTitle').value = '';
+    document.getElementById('complaintDesc').value = '';
+    document.getElementById('complaintAddress').value = '';
+    modal.style.display = 'none';
+
+    alert('Ваше обращение принято! Статус можно отследить в разделе "Мои обращения".');
+  });
+
+  // простой sanitizer для XSS
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  // ----- 4. Яндекс.Карты с демо-метками (проблемы района) -----
+  function initYandexMap() {
+    if (typeof ymaps === 'undefined') {
+      // если API не загрузился (нет ключа или сеть)
+      document.getElementById('map').innerHTML = '<p style="padding:2rem; text-align:center;">Карта загрузится после подключения API Яндекс.Карт (вставьте ключ). Для демо доступен макет.</p>';
+      return;
+    }
+    ymaps.ready(() => {
+      const map = new ymaps.Map('map', {
+        center: [54.387, 53.258],  // приблизительные координаты Бавлов
+        zoom: 12,
+        controls: ['zoomControl', 'fullscreenControl']
+      });
+      // добавляем метки проблемных точек
+      const problems = [
+        { coords: [54.392, 53.261], text: 'Яма на перекрёстке ул. Ленина/Садовая' },
+        { coords: [54.380, 53.250], text: 'Свалка у гаражей, требуется вывоз' },
+        { coords: [54.395, 53.275], text: 'Отсутствует освещение в сквере' }
+      ];
+      problems.forEach(p => {
+        const placemark = new ymaps.Placemark(p.coords, {
+          balloonContent: `<strong>📍 ${p.text}</strong><br>Статус: в работе (ИК уведомлён)`
+        });
+        map.geoObjects.add(placemark);
+      });
+    });
+  }
+
+  // Если Яндекс уже загружен, инициализируем, иначе ждём
+  if (typeof ymaps !== 'undefined') {
+    initYandexMap();
+  } else {
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        if (typeof ymaps !== 'undefined') initYandexMap();
+        else console.warn('API Яндекс.Карт не загрузился');
+      }, 300);
+    });
+  }
+
+  // ----- 5. Кнопка голосования опрос -----
+  document.getElementById('voteBtn')?.addEventListener('click', () => {
+    const selected = document.querySelector('input[name="poll"]:checked');
+    if(selected) {
+      alert('Спасибо! Ваш голос учтён в развитии Бавлинского района.');
+    } else {
+      alert('Выберите вариант ответа');
+    }
+  });
+
+  // Кнопка "Войти" (демо-уведомление)
+  document.getElementById('loginBtn')?.addEventListener('click', () => {
+    alert('Здесь будет интеграция с Госуслугами (ЕСИА). Для демо-режима вход не требуется.');
+  });
+</script>
+</body>
+</html>
